@@ -172,8 +172,8 @@ public class SquidCurseEntity extends PackCursedSpirit {
                         .subtract(0.0D, this.target.getBbHeight() / 2.0F, 0.0D);
                 ExplosionHandler.spawn(this.level().dimension(), location, Math.min(MAX_EXPLOSION, EXPLOSIVE_POWER),
                         20, 1, owner, JJKDamageSources.indirectJujutsuAttack(this, owner, JJKAbilities.EMBER_INSECTS.get()), true);
-
             }
+            this.kill();
         } else {
             if (this.target == null) return;
         }
