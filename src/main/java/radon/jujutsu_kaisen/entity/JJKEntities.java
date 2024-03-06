@@ -89,6 +89,11 @@ public class JJKEntities {
                     .sized(0.5F, 0.5F)
                     .build(new ResourceLocation(JujutsuKaisen.MOD_ID, "fish_curse")
                             .toString()));
+    public static DeferredHolder<EntityType<?>, EntityType<SquidCurseEntity>> SQUID_CURSE = ENTITIES.register("squid_curse", () ->
+            EntityType.Builder.<SquidCurseEntity>of(SquidCurseEntity::new, MobCategory.AMBIENT)
+                    .sized(0.5F, 5F)
+                    .build(new ResourceLocation(JujutsuKaisen.MOD_ID, "squid_curse")
+                            .toString()));
     public static DeferredHolder<EntityType<?>, EntityType<CyclopsCurseEntity>> CYCLOPS_CURSE = ENTITIES.register("cyclops_curse", () ->
             EntityType.Builder.<CyclopsCurseEntity>of(CyclopsCurseEntity::new, MobCategory.AMBIENT)
                     .sized(1.6F, 6.0F)
@@ -100,7 +105,7 @@ public class JJKEntities {
                             .toString()));
     public static DeferredHolder<EntityType<?>, EntityType<ZombaCurseEntity>> ZOMBA_CURSE = ENTITIES.register("zomba_curse", () ->
             EntityType.Builder.<ZombaCurseEntity>of(ZombaCurseEntity::new, MobCategory.AMBIENT)
-                    .sized(1.2F, 2.0F)
+                    .sized(1.2F, 5.0F)
                     .build(new ResourceLocation(JujutsuKaisen.MOD_ID, "zomba_curse")
                             .toString()));
     public static DeferredHolder<EntityType<?>, EntityType<WormCurseEntity>> WORM_CURSE = ENTITIES.register("worm_curse", () ->
@@ -608,6 +613,7 @@ public class JJKEntities {
 
         event.put(RUGBY_FIELD_CURSE.get(), SorcererEntity.createAttributes().build());
         event.put(FISH_CURSE.get(), FishCurseEntity.createAttributes().build());
+        event.put(SQUID_CURSE.get(), SquidCurseEntity.createAttributes().build());
         event.put(CYCLOPS_CURSE.get(), SorcererEntity.createAttributes().build());
         event.put(KUCHISAKE_ONNA.get(), KuchisakeOnnaEntity.createAttributes().build());
         event.put(ZOMBA_CURSE.get(), SorcererEntity.createAttributes().build());

@@ -140,6 +140,8 @@ public class JJKItems {
             () -> new DeferredSpawnEggItem(JJKEntities.RUGBY_FIELD_CURSE, 0x629fb0, 0xc7b46b, new Item.Properties()));
     public static DeferredHolder<Item, DeferredSpawnEggItem> FISH_CURSE_SPAWN_EGG = ITEMS.register("fish_curse_spawn_egg",
             () -> new DeferredSpawnEggItem(JJKEntities.FISH_CURSE, 0x181a21, 0x252935, new Item.Properties()));
+    public static DeferredHolder<Item, DeferredSpawnEggItem> SQUID_CURSE_SPAWN_EGG = ITEMS.register("squid_curse_spawn_egg",
+            () -> new DeferredSpawnEggItem(JJKEntities.SQUID_CURSE, 0xd9fbfa, 0x598b9e, new Item.Properties()));
     public static DeferredHolder<Item, DeferredSpawnEggItem> CYCLOPS_CURSE_SPAWN_EGG = ITEMS.register("cyclops_curse_spawn_egg",
             () -> new DeferredSpawnEggItem(JJKEntities.CYCLOPS_CURSE, 0xbec0c5, 0xb7acba, new Item.Properties()));
     public static DeferredHolder<Item, DeferredSpawnEggItem> KUCHISAKE_ONNA_SPAWN_EGG = ITEMS.register("kuchisake_onna_spawn_egg",

@@ -184,6 +184,7 @@ public class JJKAbilities {
     public static DeferredHolder<Ability, MaximumUzumaki> MAXIMUM_UZUMAKI = ABILITIES.register("maximum_uzumaki", MaximumUzumaki::new);
     public static DeferredHolder<Ability, MiniUzumaki> MINI_UZUMAKI = ABILITIES.register("mini_uzumaki", MiniUzumaki::new);
     public static DeferredHolder<Ability, WormCurseGrab> WORM_CURSE_GRAB = ABILITIES.register("worm_curse_grab", WormCurseGrab::new);
+    public static DeferredHolder<Ability, SquidCurseShoot> SQUID_CURSE_SHOOT = ABILITIES.register("squid_curse_shoot", SquidCurseShoot::new);
 
     public static DeferredHolder<Ability, DontMove> DONT_MOVE = ABILITIES.register("dont_move", DontMove::new);
     public static DeferredHolder<Ability, GetCrushed> GET_CRUSHED = ABILITIES.register("get_crushed", GetCrushed::new);

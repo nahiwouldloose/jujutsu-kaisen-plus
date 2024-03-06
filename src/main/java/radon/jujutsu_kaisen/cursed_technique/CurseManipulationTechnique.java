@@ -19,6 +19,7 @@ public class CurseManipulationTechnique implements ICursedTechnique {
         ABILITIES.add(JJKAbilities.MAXIMUM_UZUMAKI.get());
         ABILITIES.add(JJKAbilities.MINI_UZUMAKI.get());
         ABILITIES.add(JJKAbilities.WORM_CURSE_GRAB.get());
+        ABILITIES.add(JJKAbilities.SQUID_CURSE_SHOOT.get());
     }
 
     @Override

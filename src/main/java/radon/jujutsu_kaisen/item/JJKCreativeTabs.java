@@ -52,6 +52,7 @@ public class JJKCreativeTabs {
 
                         pOutput.accept(JJKItems.RUGBY_FIELD_CURSE_SPAWN_EGG.get());
                         pOutput.accept(JJKItems.FISH_CURSE_SPAWN_EGG.get());
+                        pOutput.accept(JJKItems.SQUID_CURSE_SPAWN_EGG.get());
                         pOutput.accept(JJKItems.CYCLOPS_CURSE_SPAWN_EGG.get());
                         pOutput.accept(JJKItems.KUCHISAKE_ONNA_SPAWN_EGG.get());
                         pOutput.accept(JJKItems.ZOMBA_CURSE_SPAWN_EGG.get());

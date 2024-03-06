@@ -243,6 +243,7 @@ public class JJKClientEventHandler {
             event.registerEntityRenderer(JJKEntities.HANAMI.get(), HanamiRenderer::new);
             event.registerEntityRenderer(JJKEntities.RUGBY_FIELD_CURSE.get(), RugbyFieldCurseRenderer::new);
             event.registerEntityRenderer(JJKEntities.FISH_CURSE.get(), FishCurseRenderer::new);
+            event.registerEntityRenderer(JJKEntities.SQUID_CURSE.get(), SquidCurseRenderer::new);
             event.registerEntityRenderer(JJKEntities.CYCLOPS_CURSE.get(), CyclopsCurseRenderer::new);
             event.registerEntityRenderer(JJKEntities.KUCHISAKE_ONNA.get(), ScissorCurseRenderer::new);
             event.registerEntityRenderer(JJKEntities.ZOMBA_CURSE.get(), ZombaCurseRenderer::new);
