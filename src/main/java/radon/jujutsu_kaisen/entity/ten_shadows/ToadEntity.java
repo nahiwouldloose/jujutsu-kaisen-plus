@@ -81,8 +81,8 @@ public class ToadEntity extends TenShadowsSummon {
         this.yHeadRotO = this.yHeadRot;
     }
 
-    public ToadEntity(EntityType<? extends TamableAnimal> type, ToadEntity leader) {
-        this(type, leader, leader.isTame(), false);
+    public ToadEntity(EntityType<? extends TamableAnimal> type, ToadEntity leader, LivingEntity owner) {
+        this(type, owner, leader.isTame(), false);
 
         this.setLeader(leader);
     }
@@ -173,7 +173,7 @@ public class ToadEntity extends TenShadowsSummon {
             this.original = true;
 
             for (int i = 0; i < COUNT; i++) {
-                ToadEntity entity = new ToadEntity((EntityType<? extends TamableAnimal>) this.getType(), this);
+                ToadEntity entity = new ToadEntity((EntityType<? extends TamableAnimal>) this.getType(), this, owner);
                 entity.setPos(this.position());
                 this.level().addFreshEntity(entity);
             }
@@ -369,8 +369,8 @@ public class ToadEntity extends TenShadowsSummon {
         double d1 = end.y - start.y;
         double d2 = end.z - start.z;
         double d3 = Math.sqrt(d0 * d0 + d2 * d2);
-        float yaw = Mth.wrapDegrees((float) (Mth.atan2(d2, d0) * (double) (180.0F / (float) Math.PI)) - 90.0F);
-        float pitch = Mth.wrapDegrees((float) (-(Mth.atan2(d1, d3) * (double) (180.0F / (float) Math.PI))));
+        float yaw = Mth.wrapDegrees((float) (Mth.atan2(d2, d0) * (double) (180.0F / Mth.PI)) - 90.0F);
+        float pitch = Mth.wrapDegrees((float) (-(Mth.atan2(d1, d3) * (double) (180.0F / Mth.PI))));
 
         Vec3 speed = calculateViewVector(pitch, yaw).scale(ToadTongueProjectile.SPEED * (this.hasWings() ? 5.0D : 1.0D));
 

@@ -1,6 +1,7 @@
 package radon.jujutsu_kaisen.client.model.base;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
@@ -19,8 +20,8 @@ public class DefaultedTurnHeadEntityGeoModel<T extends GeoAnimatable> extends De
 
         if (head != null) {
             EntityModelData data = animationState.getData(DataTickets.ENTITY_MODEL_DATA);
-            head.setRotY(data.netHeadYaw() * ((float) Math.PI / 180.0F));
-            head.setRotX(data.headPitch() * ((float) Math.PI / 180.0F));
+            head.setRotY(data.netHeadYaw() * (Mth.PI / 180.0F));
+            head.setRotX(data.headPitch() * (Mth.PI / 180.0F));
         }
     }
 }
