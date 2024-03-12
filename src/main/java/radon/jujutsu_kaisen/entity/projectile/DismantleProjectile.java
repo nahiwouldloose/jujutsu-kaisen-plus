@@ -63,7 +63,7 @@ public class DismantleProjectile extends JujutsuProjectile {
         this.setRoll(roll);
     }
 
-    public DismantleProjectile(LivingEntity owner, float power, float roll, Vec3 pos, int length) {
+    public DismantleProjectile(LivingEntity owner, float power, float roll, Vec3 pos, int length, boolean destroy) {
         super(JJKEntities.DISMANTLE.get(), owner.level(), owner, power);
 
         Vec3 look = RotationUtil.getTargetAdjustedLookAngle(owner);
@@ -71,15 +71,16 @@ public class DismantleProjectile extends JujutsuProjectile {
 
         this.setRoll(roll);
         this.setLength(length);
+
+        this.destroy = destroy;
     }
 
-    public DismantleProjectile(LivingEntity owner, float power, float roll, Vec3 pos, int length, boolean instant, boolean destroy) {
-        this(owner, power, roll, pos, length);
+    public DismantleProjectile(LivingEntity owner, float power, float roll, Vec3 pos, int length, boolean destroy, boolean instant) {
+        this(owner, power, roll, pos, length, destroy);
 
         this.moveTo(pos.x, pos.y, pos.z, (this.random.nextFloat() - 0.5F) * 360.0F, 0.0F);
 
         this.instant = instant;
-        this.destroy = destroy;
     }
 
     protected boolean isInfinite() {
@@ -179,13 +180,19 @@ public class DismantleProjectile extends JujutsuProjectile {
 
         double depth = Math.max(1, Math.round(this.getDeltaMovement().length()));
 
+        List<Entity> entities = this.level().getEntities(this, AABB.ofSize(center, 16.0D, 16.0D, 16.0D));
+
         for (int z = 0; z < depth; z++) {
             for (int x = 0; x < length; x++) {
                 BlockPos current = BlockPos.containing(start.add(end.subtract(start).scale((1.0D / length) * x).add(forward.scale(z))));
 
                 AABB bounds = AABB.ofSize(current.getCenter(), 1.0D, 1.0D, 1.0D);
 
-                hits.addAll(this.level().getEntities(this, bounds));
+                for (Entity entity : entities) {
+                    if (entity.getBoundingBox().intersects(bounds)) {
+                        hits.add(entity);
+                    }
+                }
 
                 if (!this.destroy) continue;
 

@@ -13,6 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +26,8 @@ import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
 import radon.jujutsu_kaisen.data.sorcerer.JujutsuType;
 import radon.jujutsu_kaisen.data.sorcerer.Trait;
 import radon.jujutsu_kaisen.config.ConfigHolder;
+import radon.jujutsu_kaisen.data.stat.ISkillData;
+import radon.jujutsu_kaisen.data.stat.Skill;
 import radon.jujutsu_kaisen.entity.base.DomainExpansionEntity;
 import radon.jujutsu_kaisen.entity.domain.base.ClosedDomainExpansionEntity;
 import radon.jujutsu_kaisen.item.veil.modifier.ColorModifier;
@@ -154,9 +157,14 @@ public class VeilRodBlockEntity extends BlockEntity {
 
                     if (distance < pBlockEntity.size && distance >= pBlockEntity.size - 1) {
                         BlockPos pos = pPos.offset(x, y, z);
+
+                        if (!pLevel.isInWorldBounds(pos)) return;
+
                         BlockState state = pLevel.getBlockState(pos);
 
                         if (!state.is(BlockTags.DOORS) && !state.is(BlockTags.TRAPDOORS) && !state.getCollisionShape(pLevel, pos).isEmpty()) continue;
+
+                        if (pos.getY() < pLevel.getMinBuildHeight()) continue;
 
                         boolean blocked = false;
 
@@ -169,16 +177,16 @@ public class VeilRodBlockEntity extends BlockEntity {
 
                             if (veilCasterCap == null) continue;
 
-                            ISorcererData veilCasterData = veilCasterCap.getSorcererData();
+                            ISkillData veilCasterData = veilCasterCap.getSkillData();
 
                             IJujutsuCapability domainCasterCap = opponent.getCapability(JujutsuCapabilityHandler.INSTANCE);
 
                             if (domainCasterCap == null) continue;
 
-                            ISorcererData domainCasterData = domainCasterCap.getSorcererData();
+                            ISkillData domainCasterData = domainCasterCap.getSkillData();
 
                             // Closed domain expansions create a separate space inside the barrier
-                            if (!(domain instanceof ClosedDomainExpansionEntity) && domainCasterData.getAbilityPower() <= veilCasterData.getAbilityPower()) continue;
+                            if (!(domain instanceof ClosedDomainExpansionEntity) && domainCasterData.getSkill(Skill.BARRIER) <= veilCasterData.getSkill(Skill.BARRIER)) continue;
 
                             if (domain.isInsideBarrier(pos)) {
                                 if (pLevel.getBlockEntity(pos) instanceof VeilBlockEntity be) {

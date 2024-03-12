@@ -11,7 +11,6 @@ import radon.jujutsu_kaisen.ability.JJKAbilities;
 import radon.jujutsu_kaisen.ability.base.Ability;
 import radon.jujutsu_kaisen.data.curse_manipulation.ICurseManipulationData;
 import radon.jujutsu_kaisen.data.sorcerer.ISorcererData;
-import radon.jujutsu_kaisen.data.JJKAttachmentTypes;
 import radon.jujutsu_kaisen.data.capability.IJujutsuCapability;
 import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
 import radon.jujutsu_kaisen.data.sorcerer.SorcererGrade;
@@ -31,10 +30,11 @@ public class MiniUzumakiProjectile extends BeamEntity {
         this.noCulling = true;
     }
 
-    public MiniUzumakiProjectile(LivingEntity owner) {
+    public MiniUzumakiProjectile(LivingEntity owner, float power) {
         this(JJKEntities.MINI_UZUMAKI.get(), owner.level());
 
         this.setOwner(owner);
+        this.setPower(power);
 
         IJujutsuCapability cap = owner.getCapability(JujutsuCapabilityHandler.INSTANCE);
 
@@ -57,12 +57,12 @@ public class MiniUzumakiProjectile extends BeamEntity {
 
             if (weakestCap == null) continue;
 
-            IJujutsuCapability currentcap = current.getCapability(JujutsuCapabilityHandler.INSTANCE);
+            IJujutsuCapability currentCap = current.getCapability(JujutsuCapabilityHandler.INSTANCE);
 
-            if (currentcap == null) continue;
+            if (currentCap == null) continue;
 
             ISorcererData weakestData = weakestCap.getSorcererData();
-            ISorcererData currentData = currentcap.getSorcererData();
+            ISorcererData currentData = currentCap.getSorcererData();
 
             if (currentData.getExperience() < weakestData.getExperience()) weakest = current;
         }
@@ -75,7 +75,7 @@ public class MiniUzumakiProjectile extends BeamEntity {
 
         ISorcererData weakestData = weakestCap.getSorcererData();
 
-        this.setPower(SorcererUtil.getPower(weakestData.getExperience()));
+        this.setPower(Math.min(ownerSorcererData.getAbilityOutput() * 1.25F, this.getPower() + weakestData.getBaseOutput()));
 
         if (SorcererUtil.getGrade(weakestData.getExperience()).ordinal() >= SorcererGrade.SEMI_GRADE_1.ordinal() && weakestData.getTechnique() != null) {
             ownerCurseManipulationData.absorb(weakestData.getTechnique());

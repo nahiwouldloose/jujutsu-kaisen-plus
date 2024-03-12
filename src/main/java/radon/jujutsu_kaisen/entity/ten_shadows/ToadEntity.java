@@ -88,6 +88,14 @@ public class ToadEntity extends TenShadowsSummon {
     }
 
     @Override
+    public boolean canAttack(@NotNull LivingEntity pTarget) {
+        if (this.getLeader() == pTarget || pTarget instanceof ToadEntity toad && toad.getLeader() == pTarget) {
+            return false;
+        }
+        return super.canAttack(pTarget);
+    }
+
+    @Override
     protected void customServerAiStep() {
         if (!this.canShoot()) {
             this.moveControl.setWantedPosition(this.getX(), this.getY(), this.getZ(), this.getSpeed());
@@ -101,6 +109,15 @@ public class ToadEntity extends TenShadowsSummon {
                     this.shoot(arrow);
                     arrow.discard();
                 }
+            }
+        }
+
+        ToadEntity leader = this.getLeader();
+
+        if (!this.original) {
+            if (leader == null || leader.isRemoved() || !leader.isAlive()) {
+                this.discard();
+                return;
             }
         }
 
@@ -123,16 +140,10 @@ public class ToadEntity extends TenShadowsSummon {
                     .filter(entity -> !entity.isAlliedTo(this.getTarget()))
                     .filter(entity -> (entity.getLeader() != null && entity.getLeader() == this.getLeader()) || this.getLeader() == entity || entity.getLeader() == this)
                     .forEach(entity -> entity.setTarget(this.getTarget()));
-        } else {
-            ToadEntity leader = this.getLeader();
-
-            if (leader != null && !leader.isRemoved() && leader.isAlive()) {
-                if (this.distanceTo(leader) >= 1.0D) {
-                    this.lookControl.setLookAt(leader, 10.0F, (float) this.getMaxHeadXRot());
-                    this.navigation.moveTo(leader, 1.0D);
-                }
-            } else if (!this.original) {
-                this.discard();
+        } else if (leader != null) {
+            if (this.distanceTo(leader) >= 1.0D) {
+                this.lookControl.setLookAt(leader, 10.0F, (float) this.getMaxHeadXRot());
+                this.navigation.moveTo(leader, 1.0D);
             }
         }
     }
@@ -165,6 +176,8 @@ public class ToadEntity extends TenShadowsSummon {
     public void onAddedToWorld() {
         super.onAddedToWorld();
 
+        if (this.getRitual() > 0) return;
+
         LivingEntity owner = this.getOwner();
 
         if (owner == null) return;
@@ -182,7 +195,7 @@ public class ToadEntity extends TenShadowsSummon {
 
     @Override
     public boolean hurt(@NotNull DamageSource pSource, float pAmount) {
-        return this.entityData.get(DATA_RITUAL) == 0 && super.hurt(pSource, pAmount);
+        return this.getRitual() == 0 && super.hurt(pSource, pAmount);
     }
 
     @Override
@@ -310,7 +323,7 @@ public class ToadEntity extends TenShadowsSummon {
     }
 
     private PlayState howlPredicate(AnimationState<ToadEntity> animationState) {
-        if (this.entityData.get(DATA_RITUAL) > 0) {
+        if (this.getRitual() > 0) {
             return animationState.setAndContinue(HOWL);
         }
         animationState.getController().forceAnimationReset();
@@ -345,7 +358,7 @@ public class ToadEntity extends TenShadowsSummon {
 
     @Override
     public void tick() {
-        int ritual = this.entityData.get(DATA_RITUAL);
+        int ritual = this.getRitual();
 
         if (ritual > 0) {
             this.entityData.set(DATA_RITUAL, --ritual);

@@ -8,7 +8,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -18,9 +17,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.ThornsEnchantment;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.entity.living.LivingHurtEvent;
@@ -28,19 +25,17 @@ import org.jetbrains.annotations.Nullable;
 import radon.jujutsu_kaisen.JujutsuKaisen;
 import radon.jujutsu_kaisen.ability.JJKAbilities;
 import radon.jujutsu_kaisen.ability.base.Ability;
-import radon.jujutsu_kaisen.config.ConfigHolder;
 import radon.jujutsu_kaisen.data.ability.IAbilityData;
 import radon.jujutsu_kaisen.data.capability.IJujutsuCapability;
 import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
 import radon.jujutsu_kaisen.data.sorcerer.ISorcererData;
-import radon.jujutsu_kaisen.data.JJKAttachmentTypes;
-import radon.jujutsu_kaisen.data.capability.IJujutsuCapability;
-import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
 import radon.jujutsu_kaisen.data.sorcerer.CursedEnergyNature;
 import radon.jujutsu_kaisen.data.sorcerer.Trait;
 import radon.jujutsu_kaisen.client.particle.LightningParticle;
 import radon.jujutsu_kaisen.client.particle.ParticleColors;
 import radon.jujutsu_kaisen.damage.JJKDamageSources;
+import radon.jujutsu_kaisen.data.stat.ISkillData;
+import radon.jujutsu_kaisen.data.stat.Skill;
 import radon.jujutsu_kaisen.effect.JJKEffects;
 import radon.jujutsu_kaisen.entity.JujutsuLightningEntity;
 import radon.jujutsu_kaisen.item.JJKItems;
@@ -52,13 +47,13 @@ import radon.jujutsu_kaisen.util.EntityUtil;
 import radon.jujutsu_kaisen.util.HelperMethods;
 import radon.jujutsu_kaisen.util.RotationUtil;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class CursedEnergyFlow extends Ability implements Ability.IToggled {
     private static final UUID MOVEMENT_SPEED_UUID = UUID.fromString("641b629b-f7b7-4066-a486-8e1d670a7439");
 
     private static final double SPEED = 0.02D;
+    private static final double MAX_SPEED = 0.5D;
 
     private static final float LIGHTNING_DAMAGE = 5.0F;
 
@@ -87,7 +82,9 @@ public class CursedEnergyFlow extends Ability implements Ability.IToggled {
         if (!owner.level().getBlockState(owner.blockPosition()).getFluidState().isEmpty()) {
             Vec3 movement = owner.getDeltaMovement();
 
-            if (movement.y < 0.0D) {
+            if (owner.isInFluidType()) {
+                owner.setDeltaMovement(movement.x, 0.1D, movement.z);
+            } else if (movement.y < 0.0D) {
                 owner.setDeltaMovement(movement.x, 0.01D, movement.z);
             }
             owner.setOnGround(true);
@@ -146,7 +143,7 @@ public class CursedEnergyFlow extends Ability implements Ability.IToggled {
     @Override
     public void applyModifiers(LivingEntity owner) {
         EntityUtil.applyModifier(owner, Attributes.MOVEMENT_SPEED, MOVEMENT_SPEED_UUID, "Movement speed",
-                SPEED * this.getPower(owner), AttributeModifier.Operation.ADDITION);
+                Math.min(MAX_SPEED, SPEED * this.getPower(owner)), AttributeModifier.Operation.ADDITION);
     }
 
     @Override
@@ -223,14 +220,14 @@ public class CursedEnergyFlow extends Ability implements Ability.IToggled {
 
         if (!abilityData.hasToggled(JJKAbilities.CURSED_ENERGY_FLOW.get())) return;
 
-        float increase = sorcererData.getAbilityPower() * 0.5F;
+        float increase = sorcererData.getAbilityOutput() * 0.5F;
 
         switch (sorcererData.getNature()) {
             case ROUGH -> increase *= 1.5F;
             case LIGHTNING -> {
-                increase *= (attacker.getItemInHand(InteractionHand.MAIN_HAND).is(JJKItems.NYOI_STAFF.get()) ? 2.0F : 1.0F);
+                increase *= (attacker.getItemInHand(InteractionHand.MAIN_HAND).is(JJKItems.NYOI_STAFF.get()) ? 1.5F : 1.0F);
 
-                victim.addEffect(new MobEffectInstance(JJKEffects.STUN.get(), 20 * (attacker.getItemInHand(InteractionHand.MAIN_HAND).is(JJKItems.NYOI_STAFF.get()) ? 2 : 1), 0, false, false, false));
+                victim.addEffect(new MobEffectInstance(JJKEffects.STUN.get(), 5 * (attacker.getItemInHand(InteractionHand.MAIN_HAND).is(JJKItems.NYOI_STAFF.get()) ? 2 : 1), 0, false, false, false));
                 victim.playSound(SoundEvents.LIGHTNING_BOLT_IMPACT, 1.0F, 0.5F + HelperMethods.RANDOM.nextFloat() * 0.2F);
 
                 for (int i = 0; i < 8; i++) {
@@ -254,7 +251,7 @@ public class CursedEnergyFlow extends Ability implements Ability.IToggled {
                         ((ServerLevel) victim.level()).sendParticles(ParticleTypes.EXPLOSION, pos.x, pos.y, pos.z, 0, 1.0D, 0.0D, 0.0D, 1.0D);
                         victim.level().playSound(null, pos.x, pos.y, pos.z, SoundEvents.GENERIC_EXPLODE, SoundSource.MASTER, 1.0F, 1.0F);
 
-                        victim.setDeltaMovement(look.scale(1.0F + (sorcererData.getAbilityPower() * 0.1F)));
+                        victim.setDeltaMovement(look.scale(1.0F + (sorcererData.getAbilityOutput() * 0.1F)));
                         victim.hurtMarked = true;
                     }
                 }, 5);
@@ -281,9 +278,8 @@ public class CursedEnergyFlow extends Ability implements Ability.IToggled {
         if (victim.level().isClientSide) return;
 
         DamageSource source = event.getSource();
-        float amount = event.getAmount();
 
-        if (source.is(DamageTypeTags.BYPASSES_ARMOR)) return;
+        if (source.is(DamageTypeTags.BYPASSES_RESISTANCE)) return;
 
         if (!(source.getEntity() instanceof LivingEntity attacker)) return;
 
@@ -310,26 +306,6 @@ public class CursedEnergyFlow extends Ability implements Ability.IToggled {
                 }
             }
         }
-
-        float armor = sorcererData.getAbilityPower() * (abilityData.isChanneling(JJKAbilities.CURSED_ENERGY_SHIELD.get()) ? 5.0F : 2.5F);
-        float toughness = armor * 0.1F;
-
-        float f = 2.0F + toughness / 4.0F;
-        float f1 = Mth.clamp(armor - amount / f, armor * 0.2F, 23.75F);
-        float blocked = amount * (1.0F - f1 / 25.0F);
-
-        if (!(attacker instanceof Player player) || !player.getAbilities().instabuild) {
-            float cost = blocked * (sorcererData.hasTrait(Trait.SIX_EYES) ? 0.5F : 1.0F);
-
-            if (sorcererData.getEnergy() < cost) return;
-
-            sorcererData.useEnergy(cost);
-
-            if (victim instanceof ServerPlayer player) {
-                PacketHandler.sendToClient(new SyncSorcererDataS2CPacket(sorcererData.serializeNBT()), player);
-            }
-        }
-        event.setAmount(blocked);
     }
 
     @Mod.EventBusSubscriber(modid = JujutsuKaisen.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)

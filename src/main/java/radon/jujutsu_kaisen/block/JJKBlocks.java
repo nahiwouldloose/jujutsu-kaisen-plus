@@ -2,6 +2,7 @@ package radon.jujutsu_kaisen.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -33,6 +34,10 @@ public class JJKBlocks {
         return false;
     }
 
+    private static Boolean never(BlockState pState, BlockGetter pLevel, BlockPos pPos, EntityType<?> pType) {
+        return false;
+    }
+
     @Nullable
     public static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> pServerType, BlockEntityType<E> pClientType, BlockEntityTicker<? super E> pTicker) {
         return pClientType == pServerType ? (BlockEntityTicker<A>) pTicker : null;
@@ -56,6 +61,7 @@ public class JJKBlocks {
                     .noLootTable()));
     public static DeferredHolder<Block, DomainAirBlock> DOMAIN_AIR = BLOCKS.register("domain_air", () ->
             new DomainAirBlock(BlockBehaviour.Properties.of()
+                    .lightLevel(pState -> 14)
                     .noCollission()
                     .noLootTable()
                     .air()));
@@ -185,9 +191,6 @@ public class JJKBlocks {
     public static DeferredHolder<Block, ChimeraShadowGardenBlock> CHIMERA_SHADOW_GARDEN = BLOCKS.register("chimera_shadow_garden", () ->
             new ChimeraShadowGardenBlock(JJKFluids.CHIMERA_SHADOW_GARDEN_SOURCE, BlockBehaviour.Properties.ofFullCopy(Blocks.WATER)));
 
-    public static DeferredHolder<Block, Block> DISPLAY_CASE = BLOCKS.register("display_case", () ->
-            new DisplayCaseBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)));
-
     public static DeferredHolder<Block, Block> ALTAR = BLOCKS.register("altar", () ->
             new AltarBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
                     .requiresCorrectToolForDrops()
@@ -202,9 +205,10 @@ public class JJKBlocks {
                     .noOcclusion()));
     public static DeferredHolder<Block, Block> VEIL = BLOCKS.register("veil", () ->
             new VeilBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)
-                    .strength(100.0F, 14.0F)
+                    .strength(100.0F, 6.0F)
                     .isViewBlocking(JJKBlocks::never)
                     .isSuffocating(JJKBlocks::never)
+                    .isValidSpawn(JJKBlocks::never)
                     .noOcclusion()));
 
     public static DeferredHolder<Block, FakeWaterDurationBlock> FAKE_WATER_DURATION = BLOCKS.register("fake_water_duration", () ->

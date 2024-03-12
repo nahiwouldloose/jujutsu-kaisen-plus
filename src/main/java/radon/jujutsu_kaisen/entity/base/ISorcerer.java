@@ -12,6 +12,8 @@ import radon.jujutsu_kaisen.data.capability.IJujutsuCapability;
 import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
 import radon.jujutsu_kaisen.config.ConfigHolder;
 import radon.jujutsu_kaisen.cursed_technique.base.ICursedTechnique;
+import radon.jujutsu_kaisen.data.stat.ISkillData;
+import radon.jujutsu_kaisen.data.stat.Skill;
 import radon.jujutsu_kaisen.util.HelperMethods;
 import radon.jujutsu_kaisen.util.SorcererUtil;
 
@@ -78,22 +80,35 @@ public interface ISorcerer {
 
     JujutsuType getJujutsuType();
 
-    default void init(ISorcererData data) {
-        data.setExperience(this.getExperience());
-        data.setTechnique(this.getTechnique());
-        data.setAdditional(this.getAdditional());
-        data.setNature(this.getNature());
-        data.addTraits(this.getTraits());
-        data.setType(this.getJujutsuType());
-        data.unlockAll(this.getUnlocked());
+    default void init(ISorcererData sorcererData, ISkillData skillData) {
+        sorcererData.setExperience(this.getExperience());
+        sorcererData.setTechnique(this.getTechnique());
+        sorcererData.setAdditional(this.getAdditional());
+        sorcererData.setNature(this.getNature());
+        sorcererData.addTraits(this.getTraits());
+        sorcererData.setType(this.getJujutsuType());
+        sorcererData.unlockAll(this.getUnlocked());
 
         if (this.getMaxEnergy() > 0.0F) {
-            data.setMaxEnergy(this.getMaxEnergy());
+            sorcererData.setMaxEnergy(this.getMaxEnergy());
         }
-        data.setEnergy(data.getMaxEnergy());
 
         if (this.getCursedEnergyColor() != -1) {
-            data.setCursedEnergyColor(this.getCursedEnergyColor());
+            sorcererData.setCursedEnergyColor(this.getCursedEnergyColor());
         }
+
+        // Calculate skill points the NPC would get with their experience
+        // Spread them evenly by giving each skill total_points / total_skill_count
+
+        int distributed = sorcererData.getSkillPoints() / Skill.values().length;
+
+        if (distributed > 0) {
+            for (Skill skill : Skill.values()) {
+                int amount = Math.min(ConfigHolder.SERVER.maximumSkillLevel.get(), distributed);
+                skillData.increaseSkill(skill, amount);
+                sorcererData.useSkillPoints(amount);
+            }
+        }
+        sorcererData.setEnergy(sorcererData.getMaxEnergy());
     }
 }

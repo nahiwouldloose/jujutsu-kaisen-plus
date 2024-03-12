@@ -1,15 +1,24 @@
 package radon.jujutsu_kaisen.event;
 
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.EffectCures;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.living.LivingUseTotemEvent;
 import radon.jujutsu_kaisen.JujutsuKaisen;
 import radon.jujutsu_kaisen.ability.JJKAbilities;
 import radon.jujutsu_kaisen.data.sorcerer.ISorcererData;
@@ -28,6 +37,48 @@ import radon.jujutsu_kaisen.util.SorcererUtil;
 public class RCTEventHandler {
     @Mod.EventBusSubscriber(modid = JujutsuKaisen.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class ForgeEvents {
+        private static boolean check(LivingEntity entity, int chance) {
+            IJujutsuCapability cap = entity.getCapability(JujutsuCapabilityHandler.INSTANCE);
+
+            if (cap == null) return false;
+
+            ISorcererData data = cap.getSorcererData();
+
+            if (data.isUnlocked(JJKAbilities.RCT1.get())) return false;
+            if (entity instanceof TamableAnimal tamable && tamable.isTame()) return false;
+            if (data.hasTrait(Trait.HEAVENLY_RESTRICTION)) return false;
+            if (data.getType() != JujutsuType.SORCERER) return false;
+            if (SorcererUtil.getGrade(data.getExperience()).ordinal() < SorcererGrade.GRADE_1.ordinal()) return false;
+
+            return HelperMethods.RANDOM.nextInt(chance) == 0;
+        }
+
+        @SubscribeEvent
+        public static void onLivingUseTotem(LivingUseTotemEvent event) {
+            DamageSource source = event.getSource();
+
+            if (!(source.getEntity() instanceof LivingEntity)) return;
+
+            LivingEntity victim = event.getEntity();
+
+            if (victim.level().isClientSide) return;
+
+            IJujutsuCapability cap = victim.getCapability(JujutsuCapabilityHandler.INSTANCE);
+
+            if (cap == null) return;
+
+            ISorcererData data = cap.getSorcererData();
+
+            if (!check(victim, ConfigHolder.SERVER.reverseCursedTechniqueChance.get() / 2)) return;
+
+            data.unlock(JJKAbilities.RCT1.get());
+
+            if (victim instanceof ServerPlayer player) {
+                PacketHandler.sendToClient(new SyncSorcererDataS2CPacket(data.serializeNBT()), player);
+            }
+            victim.setHealth(1.0F);
+        }
+
         @SubscribeEvent
         public static void onLivingDamage(LivingDamageEvent event) {
             DamageSource source = event.getSource();
@@ -42,34 +93,18 @@ public class RCTEventHandler {
 
             IJujutsuCapability cap = victim.getCapability(JujutsuCapabilityHandler.INSTANCE);
 
-if (cap == null) return;
+            if (cap == null) return;
 
-ISorcererData data = cap.getSorcererData();
+            ISorcererData data = cap.getSorcererData();
 
-            if (data.isUnlocked(JJKAbilities.RCT1.get())) return;
-            if (victim instanceof TamableAnimal tamable && tamable.isTame()) return;
-            if (data.hasTrait(Trait.HEAVENLY_RESTRICTION)) return;
-            if (data.getType() != JujutsuType.SORCERER) return;
-            if (SorcererUtil.getGrade(data.getExperience()).ordinal() < SorcererGrade.GRADE_1.ordinal()) return;
+            if (!check(victim, ConfigHolder.SERVER.reverseCursedTechniqueChance.get())) return;
 
-            int chance = ConfigHolder.SERVER.reverseCursedTechniqueChance.get();
-
-            for (InteractionHand hand : InteractionHand.values()) {
-                ItemStack stack = victim.getItemInHand(hand);
-
-                if (stack.is(Items.TOTEM_OF_UNDYING)) {
-                    chance /= 2;
-                }
-            }
-
-            if (HelperMethods.RANDOM.nextInt(chance) != 0) return;
-
-            victim.setHealth(victim.getMaxHealth() / 2);
             data.unlock(JJKAbilities.RCT1.get());
 
             if (victim instanceof ServerPlayer player) {
                 PacketHandler.sendToClient(new SyncSorcererDataS2CPacket(data.serializeNBT()), player);
             }
+            victim.setHealth(1.0F);
             event.setCanceled(true);
         }
     }

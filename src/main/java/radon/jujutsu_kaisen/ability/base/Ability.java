@@ -9,6 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.player.Player;
 import radon.jujutsu_kaisen.JujutsuKaisen;
+import radon.jujutsu_kaisen.cursed_technique.JJKCursedTechniques;
 import radon.jujutsu_kaisen.cursed_technique.base.ICursedTechnique;
 import radon.jujutsu_kaisen.chant.ChantHandler;
 import radon.jujutsu_kaisen.ability.JJKAbilities;
@@ -21,6 +22,7 @@ import radon.jujutsu_kaisen.data.sorcerer.ISorcererData;
 import radon.jujutsu_kaisen.data.sorcerer.Trait;
 import radon.jujutsu_kaisen.effect.JJKEffects;
 import radon.jujutsu_kaisen.entity.base.DomainExpansionEntity;
+import radon.jujutsu_kaisen.entity.sorcerer.SukunaEntity;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -64,11 +66,11 @@ public abstract class Ability {
 
         if (ability.isScalable(owner)) {
             if (ability.isChantable()) {
-                return data.getAbilityPower(ability);
+                return data.getAbilityOutput(ability);
             }
-            return data.getAbilityPower();
+            return data.getAbilityOutput();
         }
-        return data.getRealPower();
+        return data.getBaseOutput();
     }
 
     public float getPower(LivingEntity owner) {
@@ -100,6 +102,17 @@ public abstract class Ability {
 
     // Used for skill tree
     public boolean isDisplayed(LivingEntity owner) {
+        if (this.isTechnique()) {
+            IJujutsuCapability cap = owner.getCapability(JujutsuCapabilityHandler.INSTANCE);
+
+            if (cap == null) return false;
+
+            ISorcererData data = cap.getSorcererData();
+
+            if (!data.hasTechnique(JJKCursedTechniques.getTechnique(this))) {
+                return false;
+            }
+        }
         return this.getPointsCost() > 0;
     }
 
@@ -144,7 +157,7 @@ public abstract class Ability {
 
         ISorcererData data = cap.getSorcererData();
 
-        return data.getPoints() >= this.getRealPointsCost(owner);
+        return data.getAbilityPoints() >= this.getRealPointsCost(owner);
     }
 
     public boolean isUnlockable() {
@@ -304,9 +317,11 @@ public abstract class Ability {
     public Status isTriggerable(LivingEntity owner) {
         if (!JJKAbilities.getAbilities(owner).contains(this)) return Status.UNUSUABLE;
 
-        MobEffectInstance instance = owner.getEffect(JJKEffects.STUN.get());
+        if (this.getActivationType(owner) == ActivationType.INSTANT) {
+            MobEffectInstance instance = owner.getEffect(JJKEffects.STUN.get());
 
-        if (instance != null && instance.getAmplifier() > 0) return Status.FAILURE;
+            if (instance != null && instance.getAmplifier() > 0) return Status.FAILURE;
+        }
 
         Status status = this.getStatus(owner);
 
@@ -420,7 +435,7 @@ public abstract class Ability {
             ISorcererData data = cap.getSorcererData();
 
             if (duration > 0) {
-                duration = (int) (duration * data.getRealPower());
+                duration = (int) (duration * data.getBaseOutput());
             }
             return duration;
         }

@@ -24,9 +24,8 @@ import radon.jujutsu_kaisen.data.ability.IAbilityData;
 import radon.jujutsu_kaisen.data.capability.IJujutsuCapability;
 import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
 import radon.jujutsu_kaisen.data.sorcerer.ISorcererData;
-import radon.jujutsu_kaisen.data.JJKAttachmentTypes;
-import radon.jujutsu_kaisen.data.capability.IJujutsuCapability;
-import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
+import radon.jujutsu_kaisen.data.stat.ISkillData;
+import radon.jujutsu_kaisen.data.stat.Skill;
 import radon.jujutsu_kaisen.data.ten_shadows.ITenShadowsData;
 import radon.jujutsu_kaisen.damage.JJKDamageSources;
 import radon.jujutsu_kaisen.entity.SimpleDomainEntity;
@@ -40,7 +39,6 @@ public abstract class DomainExpansionEntity extends Entity {
     private static final EntityDataAccessor<Integer> DATA_TIME = SynchedEntityData.defineId(DomainExpansionEntity.class, EntityDataSerializers.INT);
 
     public static final int OFFSET = 5;
-    private static final float SIMPLE_DOMAIN_DAMAGE = 5.0F;
 
     @Nullable
     private UUID ownerUUID;
@@ -231,10 +229,10 @@ public abstract class DomainExpansionEntity extends Entity {
 
                     if (ownerCap == null) return false;
 
-                    ISorcererData ownerSorcererData = ownerCap.getSorcererData();
+                    ISkillData data = ownerCap.getSkillData();
 
                     simple.hurt(JJKDamageSources.indirectJujutsuAttack(this, owner, this.ability),
-                            ownerSorcererData.getAbilityPower(this.ability) * SIMPLE_DOMAIN_DAMAGE);
+                            data.getSkill(Skill.BARRIER) * 0.05F);
                 }
             }
         }
@@ -258,9 +256,9 @@ public abstract class DomainExpansionEntity extends Entity {
 
         if (cap == null) return 0.0F;
 
-        ISorcererData data = cap.getSorcererData();
+        ISkillData data = cap.getSkillData();
 
-        return data.getAbilityPower(this.ability) * (owner.getHealth() / owner.getMaxHealth());
+        return (data.getSkill(Skill.BARRIER) * 0.01F) * (owner.getHealth() / owner.getMaxHealth());
     }
 
     @Override

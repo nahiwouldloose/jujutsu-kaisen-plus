@@ -13,8 +13,8 @@ public class JJKVisuals {
     static {
         VISUALS.add(new CursedEnergyVisual());
         VISUALS.add(new BlueFistsVisual());
+        VISUALS.add(new AzureGlideVisual());
         VISUALS.add(new IdleTransfigurationVisual());
-        VISUALS.add(new TransfiguredSoulVisual());
         VISUALS.add(new PerfectBodyVisual());
     }
 }

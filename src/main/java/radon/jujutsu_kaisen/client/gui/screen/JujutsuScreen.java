@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
+import radon.jujutsu_kaisen.JujutsuKaisen;
 import radon.jujutsu_kaisen.client.gui.screen.tab.*;
 
 import javax.annotation.Nullable;
@@ -94,6 +95,8 @@ public class JujutsuScreen extends Screen {
         index++;
         this.tabs.add(new AbilityTab(this.minecraft, this, JJKTabType.ABOVE, index % JJKTabType.MAX_TABS, index / JJKTabType.MAX_TABS));
         index++;
+        this.tabs.add(new SkillsTab(this.minecraft, this, JJKTabType.ABOVE, index % JJKTabType.MAX_TABS, index / JJKTabType.MAX_TABS));
+        index++;
         this.tabs.add(new ChantTab(this.minecraft, this, JJKTabType.ABOVE, index % JJKTabType.MAX_TABS, index / JJKTabType.MAX_TABS));
         index++;
         this.tabs.add(new CursedEnergyColorTab(this.minecraft, this, JJKTabType.ABOVE, index % JJKTabType.MAX_TABS, index / JJKTabType.MAX_TABS));
@@ -131,6 +134,16 @@ public class JujutsuScreen extends Screen {
             }
         }
         return super.mouseClicked(pMouseX, pMouseY, pButton);
+    }
+
+    @Override
+    public boolean mouseReleased(double pMouseX, double pMouseY, int pButton) {
+        if (this.selectedTab != null) {
+            int i = (this.width - WINDOW_WIDTH) / 2;
+            int j = (this.height - WINDOW_HEIGHT) / 2;
+            this.selectedTab.mouseReleased(pMouseX - i - 9, pMouseY - j - 18, pButton);
+        }
+        return super.mouseReleased(pMouseX, pMouseY, pButton);
     }
 
     @Override

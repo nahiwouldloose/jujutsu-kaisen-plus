@@ -35,6 +35,7 @@ import radon.jujutsu_kaisen.data.JJKAttachmentTypes;
 import radon.jujutsu_kaisen.data.capability.IJujutsuCapability;
 import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
 import radon.jujutsu_kaisen.data.sorcerer.SorcererGrade;
+import radon.jujutsu_kaisen.data.stat.ISkillData;
 import radon.jujutsu_kaisen.entity.ai.goal.*;
 import radon.jujutsu_kaisen.entity.base.ISorcerer;
 import radon.jujutsu_kaisen.util.HelperMethods;
@@ -47,8 +48,6 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.*;
 
 public abstract class SorcererEntity extends PathfinderMob implements GeoEntity, ISorcerer {
-    private static final int RARITY = 3;
-
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     protected SorcererEntity(EntityType<? extends PathfinderMob> pType, Level pLevel) {
@@ -56,6 +55,29 @@ public abstract class SorcererEntity extends PathfinderMob implements GeoEntity,
 
         Arrays.fill(this.armorDropChances, 1.0F);
         Arrays.fill(this.handDropChances, 1.0F);
+    }
+
+    private boolean isInVillage() {
+        HolderSet.Named<Structure> structures = this.level().registryAccess().registryOrThrow(Registries.STRUCTURE).getTag(StructureTags.VILLAGE).orElseThrow();
+
+        boolean success = false;
+
+        for (Holder<Structure> holder : structures) {
+            if (((ServerLevel) this.level()).structureManager().getStructureWithPieceAt(this.blockPosition(), holder.value()).isValid()) {
+                success = true;
+                break;
+            }
+        }
+        return success;
+    }
+
+    @Override
+    public boolean checkSpawnRules(@NotNull LevelAccessor pLevel, @NotNull MobSpawnType pSpawnReason) {
+        if (!this.isInVillage()) return false;
+
+        if (!this.level().getEntitiesOfClass(this.getClass(), this.getBoundingBox().inflate(128.0D, 128.0D, 128.0D)).isEmpty()) return false;
+
+        return super.checkSpawnRules(pLevel, pSpawnReason);
     }
 
     @Override
@@ -123,39 +145,6 @@ public abstract class SorcererEntity extends PathfinderMob implements GeoEntity,
         }
     }
 
-    private boolean isInVillage() {
-        HolderSet.Named<Structure> structures = this.level().registryAccess().registryOrThrow(Registries.STRUCTURE).getTag(StructureTags.VILLAGE).orElseThrow();
-
-        boolean success = false;
-
-        for (Holder<Structure> holder : structures) {
-            if (((ServerLevel) this.level()).structureManager().getStructureWithPieceAt(this.blockPosition(), holder.value()).isValid()) {
-                success = true;
-                break;
-            }
-        }
-        return success;
-    }
-
-    @Override
-    public boolean checkSpawnRules(@NotNull LevelAccessor pLevel, @NotNull MobSpawnType pSpawnReason) {
-        if (pSpawnReason == MobSpawnType.NATURAL || pSpawnReason == MobSpawnType.CHUNK_GENERATION) {
-            if (this.random.nextInt(Mth.floor(RARITY * SorcererUtil.getPower(this.getExperience()))) != 0) return false;
-
-            if (!this.isInVillage()) return false;
-        }
-
-        if (this.getGrade().ordinal() >= SorcererGrade.GRADE_1.ordinal()) {
-            if (!pLevel.getEntitiesOfClass(this.getClass(), AABB.ofSize(this.position(), 128.0D, 64.0D, 128.0D)).isEmpty())
-                return false;
-        }
-
-        if (!pLevel.getEntitiesOfClass(SorcererEntity.class, AABB.ofSize(this.position(), 16.0D, 8.0D, 16.0D)).isEmpty())
-            return false;
-
-        return super.checkSpawnRules(pLevel, pSpawnReason);
-    }
-
     @Override
     public void aiStep() {
         this.updateSwingTime();
@@ -194,9 +183,10 @@ public abstract class SorcererEntity extends PathfinderMob implements GeoEntity,
 
         if (cap == null) return;
 
-        ISorcererData data = cap.getSorcererData();
+        ISorcererData sorcererData = cap.getSorcererData();
+        ISkillData skillData = cap.getSkillData();
 
-        this.init(data);
+        this.init(sorcererData, skillData);
     }
 
     @Override

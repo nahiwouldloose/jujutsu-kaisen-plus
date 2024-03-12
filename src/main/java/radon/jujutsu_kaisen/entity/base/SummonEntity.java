@@ -26,6 +26,7 @@ import radon.jujutsu_kaisen.data.sorcerer.ISorcererData;
 import radon.jujutsu_kaisen.data.JJKAttachmentTypes;
 import radon.jujutsu_kaisen.data.capability.IJujutsuCapability;
 import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
+import radon.jujutsu_kaisen.data.stat.ISkillData;
 import radon.jujutsu_kaisen.network.PacketHandler;
 import radon.jujutsu_kaisen.network.packet.s2c.SetOverlayMessageS2CPacket;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -79,7 +80,20 @@ public abstract class SummonEntity extends TamableAnimal implements GeoEntity {
 
     @Override
     public boolean canAttack(@NotNull LivingEntity pTarget) {
-        return (!this.isTame() || pTarget != this.getOwner()) && super.canAttack(pTarget);
+        if (!super.canAttack(pTarget)) return false;
+
+        if (!this.isTame()) return true;
+
+        if (pTarget == this.getOwner()) return false;
+
+        if (!(pTarget instanceof TamableAnimal)) return true;
+
+        while (pTarget instanceof TamableAnimal tamable1) {
+            if (!(tamable1.getOwner() instanceof TamableAnimal tamable2)) break;
+
+            pTarget = tamable2;
+        }
+        return ((TamableAnimal) pTarget).getOwner() != this.getOwner() || ((TamableAnimal) pTarget).isTame() != this.isTame();
     }
 
     @Override
@@ -126,11 +140,10 @@ public abstract class SummonEntity extends TamableAnimal implements GeoEntity {
 
             if (cap == null) return;
 
-            ISorcererData data = cap.getSorcererData();
+            ISorcererData sorcererData = cap.getSorcererData();
+            ISkillData skillData = cap.getSkillData();
 
-            if (data != null) {
-                sorcerer.init(data);
-            }
+            sorcerer.init(sorcererData, skillData);
         }
 
         if (this instanceof ICommandable commandable && commandable.canChangeTarget() && this.getOwner() instanceof ServerPlayer player) {

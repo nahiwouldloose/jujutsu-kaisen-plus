@@ -12,14 +12,12 @@ import java.util.stream.Collectors;
 public class ServerConfig {
     public final ModConfigSpec.DoubleValue cursedEnergyAmount;
     public final ModConfigSpec.DoubleValue cursedEnergyRegenerationAmount;
-    public final ModConfigSpec.DoubleValue maximumExperienceAmount;
     public final ModConfigSpec.DoubleValue cursedObjectEnergyForGrade;
     public final ModConfigSpec.IntValue reverseCursedTechniqueChance;
     public final ModConfigSpec.DoubleValue requiredExperienceForExperienced;
     public final ModConfigSpec.IntValue sorcererFleshRarity;
     public final ModConfigSpec.IntValue curseFleshRarity;
     public final ModConfigSpec.DoubleValue experienceMultiplier;
-    public final ModConfigSpec.DoubleValue deathPenalty;
     public final ModConfigSpec.IntValue blackFlashChance;
     public final ModConfigSpec.BooleanValue realisticCurses;
     public final ModConfigSpec.IntValue requiredImbuementAmount;
@@ -54,6 +52,7 @@ public class ServerConfig {
 
     public final ModConfigSpec.BooleanValue realisticShikigami;
     public final ModConfigSpec.IntValue abilityModeCost;
+    public final ModConfigSpec.IntValue airFrameCost;
 
     public final ModConfigSpec.IntValue cursedEnergyNatureRarity;
     public final ModConfigSpec.IntValue curseRarity;
@@ -61,14 +60,16 @@ public class ServerConfig {
     public final ModConfigSpec.IntValue heavenlyRestrictionRarity;
     public final ModConfigSpec.IntValue vesselRarity;
 
+    public final ModConfigSpec.IntValue maximumSkillLevel;
+    public final ModConfigSpec.DoubleValue abilityPointInterval;
+    public final ModConfigSpec.DoubleValue skillPointInterval;
+
     public ServerConfig(ModConfigSpec.Builder builder) {
         builder.comment("Progression").push("progression");
-        this.cursedEnergyAmount = builder.comment("Cursed energy amount (scales with experience)")
-                .defineInRange("cursedEnergyAmount", 300.0F, 0.0F, 100000.0F);
+        this.cursedEnergyAmount = builder.comment("Base cursed energy amount")
+                .defineInRange("cursedEnergyAmount", 150.0F, 0.0F, 100000.0F);
         this.cursedEnergyRegenerationAmount = builder.comment("Cursed energy regeneration amount (depends on food level)")
                 .defineInRange("cursedEnergyRegenerationAmount", 0.25F, 0.0F, 100000.0F);
-        this.maximumExperienceAmount = builder.comment("The maximum amount of experience one can obtain")
-                .defineInRange("maximumExperienceAmount", SorcererGrade.SPECIAL_GRADE.getRequiredExperience() * 4.0F, 1.0F, 1000000.0F);
         this.cursedObjectEnergyForGrade = builder.comment("The amount of energy consuming cursed objects gives to curses (multiplied by the grade of the object)")
                 .defineInRange("cursedObjectEnergyForGrade", 100.0F, 1.0F, 1000.0F);
         this.reverseCursedTechniqueChance = builder.comment("The chance of unlocking reverse cursed technique when dying (smaller number equals bigger chance and the value is halved when holding a totem)")
@@ -81,8 +82,6 @@ public class ServerConfig {
                 .defineInRange("curseFleshRarity", 20, 0, 100000);
         this.experienceMultiplier = builder.comment("Scale of experience you gain")
                         .defineInRange("experienceMultiplier", 1.0F, 0.0F, 100.0F);
-        this.deathPenalty = builder.comment("Percentage of experience lost on death")
-                .defineInRange("deathPenalty", 0.05F, 0.0F, 1.0F);
         this.blackFlashChance = builder.comment("The chance of black flash (smaller number equals bigger chance)")
                 .defineInRange("blackFlashChance", 50, 1, 1000);
         this.realisticCurses = builder.comment("When enabled curses only take damage from cap attacks")
@@ -92,10 +91,10 @@ public class ServerConfig {
         builder.pop();
 
         builder.comment("Miscellaneous").push("misc");
-        this.sorcererHealingAmount = builder.comment("The maximum amount of health sorcerers can heal per tick (scales with experience)")
-                .defineInRange("sorcererHealingAmount", 0.05F, 0.0F, 100.0F);
-        this.curseHealingAmount = builder.comment("The maximum amount of health curses can heal per tick (scales with experience)")
-                .defineInRange("curseHealingAmount", 0.075F, 0.0F, 100.0F);
+        this.sorcererHealingAmount = builder.comment("The base amount of health sorcerers heal per tick")
+                .defineInRange("sorcererHealingAmount", 1.0F, 0.0F, 100.0F);
+        this.curseHealingAmount = builder.comment("The base amount of health curses heal per tick")
+                .defineInRange("curseHealingAmount", 2.0F, 0.0F, 100.0F);
         this.uniqueTechniques = builder.comment("When enabled on servers every player will have a unique technique if any are available")
                 .define("uniqueTechniques", true);
         this.uniqueTraits = builder.comment("When enabled on servers there can be only one six eyes, heavenly restriction and vessel")
@@ -146,7 +145,7 @@ public class ServerConfig {
         this.simpleDomainCost = builder.comment("The amount of points simple domain costs to unlock")
                 .defineInRange("simpleDomainCost", 50, 1, 10000);
         this.quickDrawCost = builder.comment("The amount of points quick draw costs to unlock")
-                .defineInRange("simpleDomainCost", 50, 1, 10000);
+                .defineInRange("quickDrawCost", 50, 1, 10000);
         this.fallingBlossomEmotionCost = builder.comment("The amount of points falling blossom emotion costs to unlock")
                 .defineInRange("fallingBlossomEmotionCost", 50, 1, 10000);
         this.domainExpansionCost = builder.comment("The amount of points domain expansion costs to unlock")
@@ -187,6 +186,8 @@ public class ServerConfig {
                 .define("realisticShikigami", true);
         this.abilityModeCost = builder.comment("The amount of points ability mode costs to unlock")
                 .defineInRange("abilityModeCost", 300, 1, 10000);
+        this.airFrameCost = builder.comment("The amount of points air frame costs to unlock")
+                .defineInRange("airFrameCost", 300, 1, 10000);
         builder.pop();
 
         builder.comment("Rarity").push("rarity");
@@ -200,6 +201,15 @@ public class ServerConfig {
                 .defineInRange("heavenlyRestrictionRarity", 10, 1, 1000000);
         this.vesselRarity = builder.comment("Rarity of being a vessel (bigger value = rarer)")
                 .defineInRange("vesselRarity", 10, 1, 1000000);
+        builder.pop();
+
+        builder.comment("Skills").push("skills");
+        this.maximumSkillLevel = builder.comment("Maximum level you can upgrade a skill to")
+                .defineInRange("maximumSkillLevel", 10000, 1, 1000000);
+        this.abilityPointInterval = builder.comment("For every X experience you'll gain 1 ability points")
+                .defineInRange("abilityPointInterval", 10.0D, 1.0D, 1000000.0D);
+        this.skillPointInterval = builder.comment("For every X experience you'll gain 1 skill points")
+                .defineInRange("skillPointInterval", 20.0D, 1.0D, 1000000.0D);
         builder.pop();
     }
 

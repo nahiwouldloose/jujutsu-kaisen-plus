@@ -12,8 +12,6 @@ import radon.jujutsu_kaisen.data.sorcerer.SorcererGrade;
 import radon.jujutsu_kaisen.util.SorcererUtil;
 
 public abstract class DisasterCurse extends CursedSpirit {
-    private static final int RARITY = 5;
-
     protected DisasterCurse(EntityType<? extends TamableAnimal> pType, Level pLevel) {
         super(pType, pLevel);
     }
@@ -36,19 +34,5 @@ public abstract class DisasterCurse extends CursedSpirit {
     @Override
     public float getExperience() {
         return SorcererGrade.SPECIAL_GRADE.getRequiredExperience() * 2.0F;
-    }
-
-    @Override
-    public boolean checkSpawnRules(@NotNull LevelAccessor pLevel, @NotNull MobSpawnType pSpawnReason) {
-        if (pSpawnReason == MobSpawnType.NATURAL || pSpawnReason == MobSpawnType.CHUNK_GENERATION) {
-            if (this.random.nextInt(Mth.floor(RARITY * SorcererUtil.getPower(this.getExperience()) *
-                    (this.level().isNight() ? 0.5F : 1.0F))) != 0) return false;
-        }
-
-        if (this.getGrade().ordinal() >= SorcererGrade.GRADE_1.ordinal()) {
-            if (!pLevel.getEntitiesOfClass(this.getClass(), AABB.ofSize(this.position(), 64.0D, 32.0D, 64.0D)).isEmpty())
-                return false;
-        }
-        return this.getWalkTargetValue(this.blockPosition(), pLevel) >= 0.0F;
     }
 }

@@ -27,12 +27,11 @@ import static radon.jujutsu_kaisen.client.gui.screen.JujutsuScreen.WINDOW_INSIDE
 
 public class StatsTab extends JJKTab {
     private static final Component TITLE = Component.translatable(String.format("gui.%s.stats", JujutsuKaisen.MOD_ID));
-    private static final ResourceLocation BACKGROUND = new ResourceLocation("textures/gui/advancements/backgrounds/stone.png");
 
     private static final int[] TEST_SPLIT_OFFSETS = new int[] { 0, 10, -10, 25, -25 };
 
     public StatsTab(Minecraft minecraft, JujutsuScreen screen, JJKTabType type, int index, int page) {
-        super(minecraft, screen, type, index, page, Items.BOOKSHELF.getDefaultInstance(), TITLE, BACKGROUND, true);
+        super(minecraft, screen, type, index, page, Items.BOOKSHELF.getDefaultInstance(), TITLE, true);
     }
 
     private static float getMaxWidth(StringSplitter pManager, List<FormattedText> pText) {
@@ -46,7 +45,7 @@ public class StatsTab extends JJKTab {
 
         for (int i : TEST_SPLIT_OFFSETS) {
             List<FormattedText> list1 = stringsplitter.splitLines(pComponent, pMaxWidth - i, Style.EMPTY);
-            float f1 = Math.abs(getMaxWidth(stringsplitter, list1) - (float)pMaxWidth);
+            float f1 = Math.abs(getMaxWidth(stringsplitter, list1) - (float) pMaxWidth);
 
             if (f1 <= 10.0F) {
                 return list1;
@@ -73,15 +72,11 @@ public class StatsTab extends JJKTab {
 
         ResourceLocation texture = this.minecraft.player.getSkin().texture();
 
-        pGuiGraphics.fill(xOffset + 12 - 1, yOffset + 6 - 1, xOffset + 12 + 48 + 1, yOffset + 6 + 48 + 1, -16777216);
-
         pGuiGraphics.blit(texture, xOffset + 12, yOffset + 6, 48, 48, 8.0F, 8.0F, 8, 8, 64, 64);
 
         RenderSystem.enableBlend();
         pGuiGraphics.blit(texture, xOffset + 12, yOffset + 6, 48, 48, 40.0F, 8.0F, 8, 8, 64, 64);
         RenderSystem.disableBlend();
-
-        pGuiGraphics.fill(xOffset - 1, yOffset + 54 - 1, xOffset + 72 + 1, yOffset + 90 + 1, -16777216);
 
         pGuiGraphics.blit(texture, xOffset + 12, yOffset + 54, 48, 36, 20.0F, 20.0F, 8, 6, 64, 64);
         pGuiGraphics.blit(texture, xOffset, yOffset + 54, 12, 36, 44.0F, 20.0F, 2, 6, 64, 64);
@@ -89,9 +84,9 @@ public class StatsTab extends JJKTab {
 
         IJujutsuCapability cap = this.minecraft.player.getCapability(JujutsuCapabilityHandler.INSTANCE);
 
-if (cap == null) return;
+        if (cap == null) return;
 
-ISorcererData data = cap.getSorcererData();
+        ISorcererData data = cap.getSorcererData();
 
         SorcererGrade grade = SorcererUtil.getGrade(data.getExperience());
         SorcererGrade next = SorcererGrade.values()[Math.min(SorcererGrade.values().length - 1, grade.ordinal() + 1)];

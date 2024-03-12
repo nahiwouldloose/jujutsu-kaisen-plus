@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.player.Player;
@@ -112,7 +113,7 @@ public class Punch extends Ability {
         boolean hit = false;
 
         for (LivingEntity entity : owner.level().getEntitiesOfClass(LivingEntity.class, bounds,
-                entity -> entity != owner && owner.hasLineOfSight(entity))) {
+                EntitySelector.ENTITY_STILL_ALIVE.and(entity -> entity != owner && owner.hasLineOfSight(entity)))) {
             if (Math.sqrt(entity.distanceToSqr(bounds.getCenter())) > RANGE) continue;
 
             hit = true;
@@ -128,15 +129,17 @@ public class Punch extends Ability {
             }
             entity.invulnerableTime = 0;
 
-            if (data.hasTrait(Trait.HEAVENLY_RESTRICTION)) {
-                if (entity.hurt(owner instanceof Player player ? owner.damageSources().playerAttack(player) : owner.damageSources().mobAttack(owner), DAMAGE * this.getPower(owner))) {
-                    entity.setDeltaMovement(look.scale(LAUNCH_POWER * (1.0F + this.getPower(owner) * 0.1F) * 2.0F)
-                            .multiply(1.0D, 0.25D, 1.0D));
-                }
-            } else {
-                if (entity.hurt(JJKDamageSources.jujutsuAttack(owner, this), DAMAGE * this.getPower(owner))) {
-                    entity.setDeltaMovement(look.scale(LAUNCH_POWER * (1.0F + this.getPower(owner) * 0.1F))
-                            .multiply(1.0D, 0.25D, 1.0D));
+            if (!entity.isDeadOrDying()) {
+                if (data.hasTrait(Trait.HEAVENLY_RESTRICTION)) {
+                    if (entity.hurt(owner instanceof Player player ? owner.damageSources().playerAttack(player) : owner.damageSources().mobAttack(owner), DAMAGE * this.getPower(owner))) {
+                        entity.setDeltaMovement(look.scale(LAUNCH_POWER * (1.0F + this.getPower(owner) * 0.1F) * 2.0F)
+                                .multiply(1.0D, 0.25D, 1.0D));
+                    }
+                } else {
+                    if (entity.hurt(JJKDamageSources.jujutsuAttack(owner, this), DAMAGE * this.getPower(owner))) {
+                        entity.setDeltaMovement(look.scale(LAUNCH_POWER * (1.0F + this.getPower(owner) * 0.1F))
+                                .multiply(1.0D, 0.25D, 1.0D));
+                    }
                 }
             }
         }

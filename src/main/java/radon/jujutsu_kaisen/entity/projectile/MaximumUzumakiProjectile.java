@@ -1,6 +1,5 @@
 package radon.jujutsu_kaisen.entity.projectile;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -9,12 +8,10 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
 import radon.jujutsu_kaisen.ExplosionHandler;
 import radon.jujutsu_kaisen.ability.JJKAbilities;
 import radon.jujutsu_kaisen.data.curse_manipulation.ICurseManipulationData;
 import radon.jujutsu_kaisen.data.sorcerer.ISorcererData;
-import radon.jujutsu_kaisen.data.JJKAttachmentTypes;
 import radon.jujutsu_kaisen.data.capability.IJujutsuCapability;
 import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
 import radon.jujutsu_kaisen.data.sorcerer.SorcererGrade;
@@ -35,7 +32,7 @@ public class MaximumUzumakiProjectile extends JujutsuProjectile implements GeoEn
     private static final int DELAY = 20;
     private static final double RANGE = 10.0D;
     private static final float RADIUS = 5.0F;
-    private static final float MAX_EXPLOSION = 25.0F;
+    private static final float MAX_EXPLOSION = 15.0F;
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -77,9 +74,11 @@ public class MaximumUzumakiProjectile extends JujutsuProjectile implements GeoEn
                 }
             }
 
-            this.setPower(this.getPower() + SorcererUtil.getPower(curseData.getExperience()));
+            this.setPower(Math.min(ownerSorcererData.getAbilityOutput() * 1.25F, this.getPower() + curseData.getBaseOutput()));
 
             entity.discard();
+
+            if (this.getPower() == ownerSorcererData.getAbilityOutput() * 1.25F) break;
         }
     }
 
@@ -113,7 +112,7 @@ public class MaximumUzumakiProjectile extends JujutsuProjectile implements GeoEn
 
                 float radius = Math.min(MAX_EXPLOSION, RADIUS * this.getPower());
                 Vec3 offset = new Vec3(this.getX(), this.getY() + (this.getBbHeight() / 2.0F), this.getZ());
-                ExplosionHandler.spawn(this.level().dimension(), offset, radius, 3 * 20, this.getPower() * 0.25F, owner,
+                ExplosionHandler.spawn(this.level().dimension(), offset, radius, 3 * 20, this.getPower() * 0.1F, owner,
                         JJKDamageSources.indirectJujutsuAttack(this, owner, JJKAbilities.MAXIMUM_UZUMAKI.get()), false);
             }
         }

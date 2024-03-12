@@ -52,8 +52,8 @@ public class DismantleNet extends Ability {
 
                 Vec3 position = center.add(xAxis.scale(xOffset)).add(yAxis.scale(yOffset));
 
-                DismantleProjectile horizontal = new DismantleProjectile(owner, power, 0.0F, position, size);
-                DismantleProjectile vertical = new DismantleProjectile(owner, power, 90.0F, position, size);
+                DismantleProjectile horizontal = new DismantleProjectile(owner, power, 0.0F, position, size, false);
+                DismantleProjectile vertical = new DismantleProjectile(owner, power, 90.0F, position, size, false);
 
                 horizontal.setDeltaMovement(look.scale(Dismantle.SPEED));
                 vertical.setDeltaMovement(look.scale(Dismantle.SPEED));

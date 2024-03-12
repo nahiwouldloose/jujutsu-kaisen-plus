@@ -21,10 +21,6 @@ import radon.jujutsu_kaisen.ability.base.DomainExpansion;
 import radon.jujutsu_kaisen.data.ability.IAbilityData;
 import radon.jujutsu_kaisen.data.capability.IJujutsuCapability;
 import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
-import radon.jujutsu_kaisen.data.sorcerer.ISorcererData;
-import radon.jujutsu_kaisen.data.JJKAttachmentTypes;
-import radon.jujutsu_kaisen.data.capability.IJujutsuCapability;
-import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
 import radon.jujutsu_kaisen.client.particle.JJKParticles;
 import radon.jujutsu_kaisen.damage.JJKDamageSources;
 import radon.jujutsu_kaisen.entity.base.DomainExpansionEntity;
@@ -34,7 +30,7 @@ import radon.jujutsu_kaisen.util.HelperMethods;
 
 public class Cleave extends Ability implements Ability.IDomainAttack, Ability.IAttack, Ability.IToggled {
     public static final double RANGE = 30.0D;
-    private static final float MAX_DAMAGE = 35.0F;
+    private static final float DAMAGE = 30.0F;
 
     @Override
     public boolean shouldTrigger(PathfinderMob owner, @Nullable LivingEntity target) {
@@ -133,7 +129,7 @@ public class Cleave extends Ability implements Ability.IDomainAttack, Ability.IA
             data.delayTickEvent(() -> {
                 if (!target.isDeadOrDying()) {
                     owner.level().playSound(null, target.getX(), target.getY(), target.getZ(), JJKSounds.SLASH.get(), SoundSource.MASTER,
-                            1.0F, 1.0F);
+                            domain == null ? 1.0F : 0.05F, 1.0F);
                 }
             }, i * 2);
         }
@@ -142,13 +138,14 @@ public class Cleave extends Ability implements Ability.IDomainAttack, Ability.IA
             float power = domain == null ? Ability.getPower(JJKAbilities.CLEAVE.get(), owner) : Ability.getPower(JJKAbilities.CLEAVE.get(), owner) * DomainExpansion.getStrength(owner, false);
 
             float damage = calculateDamage(source, target);
-            damage = Math.min(MAX_DAMAGE * power, damage);
+            damage = Math.min(DAMAGE * power, damage);
 
             boolean success = target.hurt(source, damage);
 
             if (!success || !(target instanceof Mob) && !(target instanceof Player)) return;
 
-            owner.level().playSound(null, target.getX(), target.getY(), target.getZ(), JJKSounds.CLEAVE.get(), SoundSource.MASTER, 1.0F, 1.0F);
+            owner.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                    JJKSounds.CLEAVE.get(), SoundSource.MASTER, domain == null ? 1.0F : 0.05F, 1.0F);
         }, 20);
     }
 

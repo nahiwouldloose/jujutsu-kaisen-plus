@@ -123,7 +123,7 @@ public class ProjectionSorcery extends Ability implements Ability.IChannelened, 
             next = end;
         } else {
             BlockPos pos = BlockPos.containing(result.getLocation().subtract(look));
-            next = pos.getCenter();
+            next = pos.getCenter().subtract(0.0D, 0.5D, 0.0D);
         }
 
         int index = this.getCharge(owner);
@@ -222,7 +222,7 @@ public class ProjectionSorcery extends Ability implements Ability.IChannelened, 
                     level.sendParticles(new MirageParticle.MirageParticleOptions(owner.getId()), owner.getX(), owner.getY(), owner.getZ(),
                             0, 0.0D, 0.0D, 0.0D, 1.0D);
                 }
-                AABB bounds = owner.getBoundingBox().inflate(1.0D);
+                AABB bounds = owner.getBoundingBox().inflate(2.0D);
 
                 for (Entity entity : owner.level().getEntities(owner, AABB.ofSize(frame, bounds.getXsize(), bounds.getYsize(), bounds.getZsize()))) {
                     owner.swing(InteractionHand.MAIN_HAND, true);
@@ -242,7 +242,6 @@ public class ProjectionSorcery extends Ability implements Ability.IChannelened, 
                 movements.add(RelativeMovement.Y_ROT);
 
                 owner.teleportTo((ServerLevel) owner.level(), frame.x, frame.y, frame.z, movements, yaw, owner.getXRot());
-                owner.setDeltaMovement(owner.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
                 owner.setOnGround(true);
 
                 previous.set(frame);

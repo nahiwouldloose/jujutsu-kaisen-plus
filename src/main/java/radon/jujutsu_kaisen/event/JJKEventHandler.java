@@ -47,6 +47,8 @@ import radon.jujutsu_kaisen.data.sorcerer.Trait;
 import radon.jujutsu_kaisen.cursed_technique.base.ICursedTechnique;
 import radon.jujutsu_kaisen.config.ConfigHolder;
 import radon.jujutsu_kaisen.damage.JJKDamageSources;
+import radon.jujutsu_kaisen.data.stat.ISkillData;
+import radon.jujutsu_kaisen.data.stat.Skill;
 import radon.jujutsu_kaisen.entity.base.JJKPartEntity;
 import radon.jujutsu_kaisen.entity.projectile.ThrownChainProjectile;
 import radon.jujutsu_kaisen.entity.sorcerer.HeianSukunaEntity;
@@ -66,9 +68,8 @@ import java.util.List;
 public class JJKEventHandler {
     @Mod.EventBusSubscriber(modid = JujutsuKaisen.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class ForgeEvents {
-        // Has to fire before CursedEnergyFlow::onLivingHurt
-        @SubscribeEvent(priority = EventPriority.HIGH)
-        public static void onLivingHurtHigh(LivingHurtEvent event) {
+        @SubscribeEvent
+        public static void onLivingHurt(LivingHurtEvent event) {
             LivingEntity victim = event.getEntity();
 
             if (victim.level().isClientSide) return;
@@ -98,32 +99,46 @@ public class JJKEventHandler {
                     }
                 }
             }
-        }
 
-        // Has to fire after CursedEnergyFlow::onLivingHurt
-        @SubscribeEvent(priority = EventPriority.LOW)
-        public static void onLivingHurtLow(LivingHurtEvent event) {
-            LivingEntity victim = event.getEntity();
-
-            if (victim.level().isClientSide) return;
-
-            DamageSource source = event.getSource();
-
-            float amount = event.getAmount();
-
-            if (source.is(DamageTypeTags.BYPASSES_ARMOR)) return;
+            if (source.is(DamageTypeTags.BYPASSES_RESISTANCE)) return;
 
             IJujutsuCapability cap = victim.getCapability(JujutsuCapabilityHandler.INSTANCE);
 
             if (cap == null) return;
 
-            ISorcererData data = cap.getSorcererData();
+            ISorcererData sorcererData = cap.getSorcererData();
+            IAbilityData abilityData = cap.getAbilityData();
+            ISkillData skillData = cap.getSkillData();
 
-            float armor = data.getExperience() * 0.002F;
+            float armor = skillData.getSkill(Skill.REINFORCEMENT) * 0.2F;
 
-            if (data.hasTrait(Trait.HEAVENLY_RESTRICTION)) {
-                armor *= 2.0F;
+            if (sorcererData.hasTrait(Trait.HEAVENLY_RESTRICTION)) {
+                armor *= 15.0F;
             }
+
+            if (abilityData.hasToggled(JJKAbilities.CURSED_ENERGY_FLOW.get())) {
+                float shielded = armor * (abilityData.isChanneling(JJKAbilities.CURSED_ENERGY_SHIELD.get()) ? 10.0F : 5.0F);
+
+                float toughness = shielded * 0.1F;
+
+                float f = 2.0F + toughness / 4.0F;
+                float f1 = Mth.clamp(armor - amount / f, armor * 0.2F, 23.75F);
+                float blocked = amount * (1.0F - f1 / 25.0F);
+
+                if (!(victim instanceof Player player) || !player.getAbilities().instabuild) {
+                    float cost = blocked * (sorcererData.hasTrait(Trait.SIX_EYES) ? 0.5F : 1.0F);
+
+                    if (sorcererData.getEnergy() >= cost) {
+                        sorcererData.useEnergy(cost);
+
+                        if (victim instanceof ServerPlayer player) {
+                            PacketHandler.sendToClient(new SyncSorcererDataS2CPacket(sorcererData.serializeNBT()), player);
+                        }
+                    }
+                }
+                armor = shielded;
+            }
+
             float toughness = armor * 0.1F;
 
             float f = 2.0F + toughness / 4.0F;

@@ -45,16 +45,11 @@ public class AuthenticMutualLoveEntity extends ClosedDomainExpansionEntity {
 
         this.technique = data.getCurrentCopied();
 
-        List<BlockPos> floor = this.getFloor();
-
-        if (floor.isEmpty()) return;
-
         Set<ICursedTechnique> copied = data.getCopied();
 
         if (copied.isEmpty()) return;
 
-        int total = floor.size() / 8;
-        int share = total / copied.size();
+        int share = (radius * 2) / copied.size();
 
         List<ICursedTechnique> all = new ArrayList<>();
 
@@ -62,9 +57,25 @@ public class AuthenticMutualLoveEntity extends ClosedDomainExpansionEntity {
             all.addAll(Collections.nCopies(share, technique));
         }
 
+        BlockPos center = BlockPos.containing(this.position().add(0.0D, radius - 1, 0.0D));
+
+        List<BlockPos> floor = new ArrayList<>();
+
+        for (int x = -radius; x <= radius; x++) {
+            for (int z = -radius; z <= radius; z++) {
+                double distance = Math.sqrt(x * x + z * z);
+
+                if (distance > radius) continue;
+
+                BlockPos pos = center.offset(x, 0, z);
+
+                floor.add(pos);
+            }
+        }
+
         Iterator<ICursedTechnique> iter = all.iterator();
 
-        while (iter.hasNext() && !floor.isEmpty()) {
+        while (iter.hasNext()) {
             ICursedTechnique technique = iter.next();
             BlockPos pos = floor.get(this.random.nextInt(floor.size()));
             this.offsets.put(pos, technique);
@@ -117,6 +128,7 @@ public class AuthenticMutualLoveEntity extends ClosedDomainExpansionEntity {
 
         if (this.offsets.containsKey(pos)) {
             this.level().addFreshEntity(new MimicryKatanaEntity(this, this.offsets.get(pos), pos.getCenter().add(0.0D, 0.5D, 0.0D)));
+            this.offsets.remove(pos);
         }
     }
 }

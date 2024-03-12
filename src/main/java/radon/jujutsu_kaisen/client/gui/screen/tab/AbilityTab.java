@@ -7,7 +7,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import radon.jujutsu_kaisen.JujutsuKaisen;
 import radon.jujutsu_kaisen.ability.base.Ability;
 import radon.jujutsu_kaisen.ability.JJKAbilities;
@@ -22,7 +21,6 @@ import java.util.*;
 
 public class AbilityTab extends JJKTab {
     private static final Component TITLE = Component.translatable(String.format("gui.%s.ability", JujutsuKaisen.MOD_ID));
-    private static final ResourceLocation BACKGROUND = new ResourceLocation("textures/gui/advancements/backgrounds/stone.png");
 
     private final Map<Ability, AbilityWidget> children = new HashMap<>();
     private final Map<Ability, AbilityWidget> roots = new HashMap<>();
@@ -37,7 +35,7 @@ public class AbilityTab extends JJKTab {
     private AbstractMap.SimpleEntry<Ability, AbilityWidget> last;
 
     public AbilityTab(Minecraft minecraft, JujutsuScreen screen, JJKTabType type, int index, int page) {
-        super(minecraft, screen, type, index, page, Items.ENDER_PEARL.getDefaultInstance(), TITLE, BACKGROUND, true);
+        super(minecraft, screen, type, index, page, Items.ENDER_PEARL.getDefaultInstance(), TITLE, true);
 
         this.abilities = new ArrayList<>(JJKAbilities.ABILITY_REGISTRY.stream().toList());
         this.abilities.sort(Comparator.comparing(ability -> ability.getName().getString()));
@@ -109,7 +107,7 @@ public class AbilityTab extends JJKTab {
 
         ISorcererData data = cap.getSorcererData();
 
-        pGuiGraphics.drawString(this.minecraft.font, Component.translatable(String.format("gui.%s.ability.points", JujutsuKaisen.MOD_ID), data.getPoints()),
+        pGuiGraphics.drawString(this.minecraft.font, Component.translatable(String.format("gui.%s.ability.points", JujutsuKaisen.MOD_ID), data.getAbilityPoints()),
                 xOffset, yOffset, 16777215, true);
     }
 

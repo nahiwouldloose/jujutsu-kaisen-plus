@@ -21,12 +21,11 @@ import radon.jujutsu_kaisen.data.ability.IAbilityData;
 import radon.jujutsu_kaisen.data.capability.IJujutsuCapability;
 import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
 import radon.jujutsu_kaisen.data.sorcerer.ISorcererData;
-import radon.jujutsu_kaisen.data.JJKAttachmentTypes;
-import radon.jujutsu_kaisen.data.capability.IJujutsuCapability;
-import radon.jujutsu_kaisen.data.capability.JujutsuCapabilityHandler;
 import radon.jujutsu_kaisen.client.particle.ParticleColors;
 import radon.jujutsu_kaisen.client.particle.VaporParticle;
 import radon.jujutsu_kaisen.damage.JJKDamageSources;
+import radon.jujutsu_kaisen.data.stat.ISkillData;
+import radon.jujutsu_kaisen.data.stat.Skill;
 import radon.jujutsu_kaisen.entity.base.DomainExpansionEntity;
 import radon.jujutsu_kaisen.util.HelperMethods;
 
@@ -38,7 +37,6 @@ public class SimpleDomainEntity extends Entity {
     private static final EntityDataAccessor<Float> DATA_MAX_HEALTH = SynchedEntityData.defineId(SimpleDomainEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> DATA_HEALTH = SynchedEntityData.defineId(SimpleDomainEntity.class, EntityDataSerializers.FLOAT);
 
-    private static final float STRENGTH = 500.0F;
     private static final double X_STEP = 0.025D;
     public static final float RADIUS = 2.0F;
     private static final float MAX_RADIUS = 4.0F;
@@ -64,10 +62,10 @@ public class SimpleDomainEntity extends Entity {
 
         if (cap == null) return;
 
-        ISorcererData data = cap.getSorcererData();
+        ISkillData data = cap.getSkillData();
         
-        this.setRadius(Math.min(MAX_RADIUS, RADIUS * data.getAbilityPower()));
-        this.setMaxHealth(STRENGTH * data.getAbilityPower());
+        this.setRadius(Math.min(MAX_RADIUS, RADIUS * (1.0F + (data.getSkill(Skill.BARRIER) * 0.1F))));
+        this.setMaxHealth(1 + data.getSkill(Skill.BARRIER));
         this.setHealth(this.entityData.get(DATA_MAX_HEALTH));
     }
 
@@ -175,7 +173,7 @@ public class SimpleDomainEntity extends Entity {
 
                     ISorcererData targetData = targetCap.getSorcererData();
 
-                    this.hurt(JJKDamageSources.indirectJujutsuAttack(domain, target, null), DAMAGE * (1.0F + Math.max(0.0F, targetData.getAbilityPower() - ownerData.getAbilityPower())));
+                    this.hurt(JJKDamageSources.indirectJujutsuAttack(domain, target, null), DAMAGE * (1.0F + Math.max(0.0F, targetData.getAbilityOutput() - ownerData.getAbilityOutput())));
                 }
             }
 

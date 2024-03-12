@@ -32,7 +32,7 @@ public class ShadowTravel extends Ability {
     @Override
     public boolean shouldTrigger(PathfinderMob owner, @Nullable LivingEntity target) {
         if (target == null || target.isDeadOrDying()) return false;
-        return this.getTarget(owner) instanceof EntityHitResult hit && hit.getEntity() == target && HelperMethods.RANDOM.nextInt(10) == 0;
+        return this.getTarget(owner) instanceof EntityHitResult hit && hit.getEntity() == target && HelperMethods.RANDOM.nextInt(20) == 0;
     }
 
     @Override
@@ -103,10 +103,12 @@ public class ShadowTravel extends Ability {
 
     @Override
     public Status isTriggerable(LivingEntity owner) {
-        HitResult target = this.getTarget(owner);
+        if (!owner.level().isClientSide) {
+            HitResult target = this.getTarget(owner);
 
-        if (target == null) {
-            return Status.FAILURE;
+            if (target == null) {
+                return Status.FAILURE;
+            }
         }
         return super.isTriggerable(owner);
     }
